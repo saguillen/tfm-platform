@@ -1,0 +1,47 @@
+name: Deploy with GitOps
+
+on:
+  push:
+    branches:
+      - main
+  workflow_run:
+    workflows: ["Build and Push to ACR"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/tfm-gitops
+          token: ${{ secrets.GITOPS_REPO_TOKEN }}
+          path: gitops-repo
+
+      - name: Update image in kustomization
+        run: |
+          cd gitops-repo/kubernetes/overlays/prod
+          
+          # Actualizar imagen
+          kustomize edit set image \
+            tfm-platform-api=${{ secrets.REGISTRY_LOGIN_SERVER }}/tfm-platform-api:${{ github.sha }}
+
+      - name: Commit and push changes
+        run: |
+          cd gitops-repo
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "GitHub Actions"
+          
+          git add kubernetes/overlays/prod/kustomization.yaml
+          git commit -m "chore: bump image to ${{ github.sha }}"
+          git push
+
+      - name: Sync ArgoCD
+        run: |
+          argocd app sync platform-apps \
+            --server ${{ secrets.ARGOCD_SERVER }} \
+            --auth-token ${{ secrets.ARGOCD_TOKEN }} \
+            --insecure
