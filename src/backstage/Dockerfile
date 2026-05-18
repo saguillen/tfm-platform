@@ -1,39 +1,76 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Stage 1 - Create yarn install skeleton layer
+FROM node:18-alpine AS packages
 
 WORKDIR /app
+COPY backstage.json package.json yarn.lock ./
+COPY .yarn ./.yarn
+COPY .yarnrc.yml ./
+COPY packages packages
 
-# Install dependencies
-COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile --network-timeout 100000
+# Find all package.json files in packages
+RUN find packages \! -name "package.json" -mindepth 2 -maxdepth 2 -exec rm -rf {} \+
 
-# Copy source
-COPY . .
 
-# Build
-RUN yarn build
+# Stage 2 - Install dependencies and build packages
+FROM node:18-alpine AS build
 
-# Runtime stage
+# Set Python interpreter for node-gyp to use
+ENV PYTHON=/usr/bin/python3
+
+# Install build dependencies
+RUN apk add --no-cache python3 g++ build-base libsqlite3-dev
+
+USER node
+WORKDIR /app
+
+COPY --from=packages --chown=node:node /app .
+RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
+    yarn install --immutable
+
+COPY --chown=node:node . .
+
+RUN yarn tsc
+RUN yarn build:backend
+
+RUN mkdir packages/backend/dist/skeleton packages/backend/dist/bundle \
+    && tar czf packages/backend/dist/skeleton.tar.gz -C packages/backend/dist skeleton \
+    && tar czf packages/backend/dist/bundle.tar.gz -C packages/backend/dist bundle
+
+
+# Stage 3 - Build the actual backend image and install production dependencies
 FROM node:18-alpine
 
+# Set Python interpreter for node-gyp to use
+ENV PYTHON=/usr/bin/python3
+
+# Install runtime dependencies
+RUN apk add --no-cache python3 g++ build-base libsqlite3-dev
+
+USER node
 WORKDIR /app
 
+# Copy the install dependencies from the build stage
+COPY --from=build --chown=node:node /app/.yarn ./.yarn
+COPY --from=build --chown=node:node /app/.yarnrc.yml ./
+COPY --from=build --chown=node:node /app/backstage.json ./
+COPY --from=build --chown=node:node /app/yarn.lock /app/package.json /app/packages/backend/dist/skeleton/ ./
+
+RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
+    yarn workspaces focus --all --production && rm -rf "$(yarn cache clean)"
+
+# Copy the built packages from the build stage
+COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
+
+# Copy app configuration files
+COPY --chown=node:node app-config*.yaml ./
+
+# Set environment variables
 ENV NODE_ENV=production
+ENV NODE_OPTIONS="--no-node-snapshot"
 
-# Install only production dependencies
-COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile --production --network-timeout 100000
+EXPOSE 7007
 
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:7007', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-EXPOSE 3000 7007
-
-
-# Run Backstage
-CMD ["node", "dist/index.js"]
+CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "useLernaWorkspaces": true,
+  "apps": [
+    {
+      "privatePackage": false,
+      "backstagePlugin": false,
+      "name": "app"
+    },
+    {
+      "privatePackage": false,
+      "backstagePlugin": false,
+      "name": "backend"
+    }
+  ]
+}

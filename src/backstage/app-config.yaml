@@ -1,0 +1,71 @@
+app:
+  title: TFM Backstage
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+    host: 0.0.0.0
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PUT, PATCH, POST, DELETE]
+    credentials: true
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB}
+  cache:
+    store: memory
+
+organization:
+  name: TFM Platform
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integrate
+  rules:
+    - allow: [Component, System, Group, User, Resource, Location]
+  locations:
+    - type: url
+      target: https://github.com/${GITHUB_ORG}/tfm-platform/blob/main/catalog-entities/all-entities.yaml
+
+auth:
+  providers:
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_APP_ID}
+        clientSecret: ${AUTH_GITHUB_APP_SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName/github
+            - resolver: emailMatchingUserEntityProfileEmail/github
+            - resolver: emailLocalPartMatchingUserEntityName/github
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: docker
+  publisher:
+    type: 'local'
+
+scaffolder:
+  defaultAuthor:
+    name: Backstage
+    email: backstage@example.com
+  defaultCommitAction: commit
+
+kubernetes:
+  clusterLocations:
+    - type: 'config'
+      clusters:
+        - name: 'primary'
+          url: 'https://kubernetes.default'
+          authProvider: 'oidc'

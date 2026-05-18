@@ -1,0 +1,12 @@
+{
+  "extends": "@backstage/cli/types/config.presets.json",
+  "include": [
+    "src",
+    "dev"
+  ],
+  "compilerOptions": {
+    "outDir": "dist-types",
+    "declaration": true,
+    "declarationMap": true
+  }
+}
