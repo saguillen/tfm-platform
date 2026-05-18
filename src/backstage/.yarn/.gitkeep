@@ -1,0 +1,2 @@
+# This directory is needed for Yarn 3+ berry
+# It will be populated during yarn install

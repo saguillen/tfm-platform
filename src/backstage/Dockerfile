@@ -3,8 +3,8 @@ FROM node:18-alpine AS packages
 
 WORKDIR /app
 COPY backstage.json package.json yarn.lock ./
-COPY .yarn ./.yarn
 COPY .yarnrc.yml ./
+COPY .yarn ./.yarn/
 COPY packages packages
 
 # Find all package.json files in packages

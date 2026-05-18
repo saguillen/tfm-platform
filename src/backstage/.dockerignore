@@ -13,3 +13,6 @@ plugins/*/dist
 plugins/*/node_modules
 .env*
 .DS_Store
+.git*
+.gitignore
+*.md
