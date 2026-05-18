@@ -16,8 +16,8 @@ on:
       - 'src/backstage/**'
 
 permissions:
-  id-token: write
   contents: read
+  packages: write
 
 env:
   REGISTRY: tfmplatformacr.azurecr.io
@@ -35,17 +35,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: Log in to ACR
+        uses: docker/login-action@v3
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Login to ACR
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ env.REGISTRY }}
+          registry: ${{ env.REGISTRY }}
           username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
           password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
 
@@ -71,8 +64,8 @@ jobs:
           file: ${{ env.DOCKERFILE_PATH }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           labels: |
             org.opencontainers.image.created=${{ steps.meta.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -81,11 +74,4 @@ jobs:
       - name: Update image reference in GitOps
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          echo "Actualizando referencia de imagen en tfm-gitops..."
-          # Esta parte se ejecutará cuando se complete el build
-          # Puedes agregar lógica para hacer commit a tfm-gitops si es necesario
-          echo "Image pushed: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
-
-      - name: Azure Logout
-        if: always()
-        run: az logout
+          echo "Backstage image pushed: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
