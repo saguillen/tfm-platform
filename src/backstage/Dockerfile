@@ -34,5 +34,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 
 EXPOSE 3000 7007
 
+
 # Run Backstage
 CMD ["node", "dist/index.js"]
