@@ -48,18 +48,22 @@ RUN apk add --no-cache python3 g++ make
 USER node
 WORKDIR /app
 
-# Copy the install dependencies from the build stage
+# Copy all necessary files from build stage
 COPY --from=build --chown=node:node /app/.yarn ./.yarn
 COPY --from=build --chown=node:node /app/.yarnrc.yml ./
 COPY --from=build --chown=node:node /app/backstage.json ./
-COPY --from=build --chown=node:node /app/yarn.lock /app/package.json ./
+COPY --from=build --chown=node:node /app/yarn.lock ./
+COPY --from=build --chown=node:node /app/package.json ./
 COPY --from=build --chown=node:node /app/packages ./packages
+COPY --chown=node:node app-config*.yaml ./
+COPY --chown=node:node entrypoint.sh /app/entrypoint.sh
 
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
+
+# Install production dependencies
 RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
     yarn install --production && rm -rf "$(yarn cache clean)"
-
-# Copy app configuration files
-COPY --chown=node:node app-config*.yaml ./
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -70,4 +74,4 @@ EXPOSE 7007
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-CMD ["./node_modules/.bin/tsx", "packages/backend/src/index.ts"]
+ENTRYPOINT ["/app/entrypoint.sh"]
