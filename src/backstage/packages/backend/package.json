@@ -5,6 +5,9 @@
   "publishConfig": {
     "access": "restricted"
   },
+  "backstage": {
+    "role": "backend"
+  },
   "main": "dist/index.cjs.js",
   "types": "dist/index.d.ts",
   "files": [
