@@ -70,4 +70,4 @@ EXPOSE 7007
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-CMD ["node", "packages/backend/src/index.ts"]
+CMD ["./node_modules/.bin/tsx", "packages/backend/src/index.ts"]
