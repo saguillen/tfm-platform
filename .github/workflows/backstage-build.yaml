@@ -1,0 +1,91 @@
+name: Build and Push Backstage Image to ACR
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/backstage/**'
+      - '.github/workflows/backstage-build.yaml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'src/backstage/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  REGISTRY: tfmplatformacr.azurecr.io
+  IMAGE_NAME: backstage
+  DOCKERFILE_PATH: ./src/backstage/Dockerfile
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.REGISTRY }}
+          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${REGISTRY}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          else
+            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME},${REGISTRY}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-${SHORT_SHA}"
+          fi
+          
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+      - name: Build and push to ACR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/backstage
+          file: ${{ env.DOCKERFILE_PATH }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          labels: |
+            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.tags }}
+
+      - name: Update image reference in GitOps
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "Actualizando referencia de imagen en tfm-gitops..."
+          # Esta parte se ejecutará cuando se complete el build
+          # Puedes agregar lógica para hacer commit a tfm-gitops si es necesario
+          echo "Image pushed: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+
+      - name: Azure Logout
+        if: always()
+        run: az logout
