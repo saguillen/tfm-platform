@@ -56,9 +56,9 @@ jobs:
           SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
           
           if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${REGISTRY}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
           else
-            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME},${REGISTRY}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-${SHORT_SHA}"
+            TAGS="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-${SHORT_SHA}"
           fi
           
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT

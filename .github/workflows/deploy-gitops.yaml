@@ -8,6 +8,10 @@ on:
     workflows: ["Build and Push to ACR"]
     types: [completed]
 
+env:
+  REGISTRY_LOGIN_SERVER: tfmplatformacr.azurecr.io
+  IMAGE_NAME: tfm-platform-api
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/tfm-gitops
-          token: ${{ secrets.GITOPS_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: gitops-repo
 
       - name: Update image in kustomization
@@ -27,7 +31,7 @@ jobs:
           
           # Actualizar imagen
           kustomize edit set image \
-            tfm-platform-api=${{ secrets.REGISTRY_LOGIN_SERVER }}/tfm-platform-api:${{ github.sha }}
+            tfm-platform-api=${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Commit and push changes
         run: |
@@ -36,12 +40,10 @@ jobs:
           git config user.name "GitHub Actions"
           
           git add kubernetes/overlays/prod/kustomization.yaml
-          git commit -m "chore: bump image to ${{ github.sha }}"
+          git commit -m "chore: bump image to ${{ github.sha }}" || true
           git push
 
-      - name: Sync ArgoCD
+      - name: Trigger ArgoCD sync
         run: |
-          argocd app sync platform-apps \
-            --server ${{ secrets.ARGOCD_SERVER }} \
-            --auth-token ${{ secrets.ARGOCD_TOKEN }} \
-            --insecure
+          echo "GitOps deployment pushed. ArgoCD will sync automatically based on configured sync policy."
+          echo "Image: ${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
