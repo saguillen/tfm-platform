@@ -52,13 +52,11 @@ WORKDIR /app
 COPY --from=build --chown=node:node /app/.yarn ./.yarn
 COPY --from=build --chown=node:node /app/.yarnrc.yml ./
 COPY --from=build --chown=node:node /app/backstage.json ./
-COPY --from=build --chown=node:node /app/yarn.lock /app/package.json /app/packages/backend/dist/skeleton/ ./
+COPY --from=build --chown=node:node /app/yarn.lock /app/package.json ./
+COPY --from=build --chown=node:node /app/packages ./packages
 
 RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
     yarn install --production && rm -rf "$(yarn cache clean)"
-
-# Copy the built packages from the build stage
-COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
 
 # Copy app configuration files
 COPY --chown=node:node app-config*.yaml ./
@@ -72,4 +70,4 @@ EXPOSE 7007
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-CMD ["node", "index.cjs", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+CMD ["node", "packages/backend/src/index.ts"]
