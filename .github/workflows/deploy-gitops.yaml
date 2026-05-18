@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/tfm-gitops
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITOPS_DEPLOY_TOKEN }} #cambionueva variable de entorno para el token de despliegue
           path: gitops-repo
 
       - name: Update image in kustomization
