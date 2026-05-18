@@ -18,7 +18,7 @@ FROM node:18-alpine AS build
 ENV PYTHON=/usr/bin/python3
 
 # Install build dependencies
-RUN apk add --no-cache python3 g++ build-base libsqlite3-dev
+RUN apk add --no-cache python3 g++ make
 
 USER node
 WORKDIR /app
@@ -44,7 +44,7 @@ FROM node:18-alpine
 ENV PYTHON=/usr/bin/python3
 
 # Install runtime dependencies
-RUN apk add --no-cache python3 g++ build-base libsqlite3-dev
+RUN apk add --no-cache python3 g++ make
 
 USER node
 WORKDIR /app
