@@ -11,7 +11,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "backstage-cli backend:bundle",
+    "build": "backstage-cli package build",
     "start": "backstage-cli backend:dev",
     "lint": "backstage-cli repo lint --since origin/main",
     "test": "backstage-cli repo test --passWithNoTests"
