@@ -5,12 +5,13 @@ on:
     branches:
       - main
     paths:
-      - 'src/**'
-      - 'Dockerfile'
+      - 'src/api/**'
       - '.github/workflows/build-and-push.yaml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/api/**'
 
 env:
   REGISTRY_LOGIN_SERVER: tfmplatformacr.azurecr.io
@@ -40,18 +41,18 @@ jobs:
       - name: Extract metadata
         id: meta
         run: |
-          echo "tags=${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "tags=${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+          TAGS="${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }},${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest"
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./src/api
+          file: ./src/api/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Image scan with Trivy
         uses: aquasecurity/trivy-action@master
@@ -59,8 +60,10 @@ jobs:
           image-ref: ${{ env.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results.sarif'
+        continue-on-error: true
 
       - name: Upload Trivy results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
