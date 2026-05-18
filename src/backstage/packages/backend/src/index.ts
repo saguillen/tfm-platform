@@ -1,52 +1,39 @@
-import { useHotMemoize } from '@backstage/backend-common';
-import {
-  coreServices,
-  createBackendModule,
-  createBackendPlugin,
-  createServiceFactory,
-} from '@backstage/backend-plugin-api';
-import { legacyPlugin } from '@backstage/backend-common';
-import { Router } from 'express';
-import { createServiceRef } from '@backstage/backend-plugin-api';
+import express from 'express';
+import { getRootLogger } from '@backstage/backend-common';
+import { loadBackendConfig } from '@backstage/config-loader';
 
-export const createBackend = () => {
-  const backend = createBackendPlugin({
-    pluginId: 'app',
-    register(reg) {
-      reg.registerInit({
-        deps: {
-          httpRouter: coreServices.httpRouter,
-          logger: coreServices.logger,
-          config: coreServices.config,
-          database: coreServices.database,
-          permissions: coreServices.permissions,
-          discovery: coreServices.discovery,
-        },
-        async init({ httpRouter, logger, config, database, permissions, discovery }) {
-          const router = Router();
-
-          router.get('/health', (req, res) => {
-            res.send({ status: 'ok' });
-          });
-
-          router.get('/healthcheck', (req, res) => {
-            res.send({ status: 'ok' });
-          });
-
-          router.get('/info', (req, res) => {
-            res.json({
-              status: 'ok',
-              timestamp: new Date().toISOString(),
-            });
-          });
-
-          httpRouter.use(router);
-
-          logger.info('Backend initialized');
-        },
-      });
-    },
+const main = async () => {
+  const logger = getRootLogger();
+  const config = await loadBackendConfig({ logger, argv: process.argv.slice(2) });
+  
+  const app = express();
+  
+  // Health check endpoints
+  app.get('/healthcheck', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+  
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
   });
 
-  return backend;
+  const port = config.getOptional('backend.listen.port') ?? 7007;
+  const host = config.getOptional('backend.listen.host') ?? '0.0.0.0';
+
+  const server = app.listen(port, host, () => {
+    logger.info(`Backstage backend listening on http://${host}:${port}`);
+  });
+
+  process.on('SIGTERM', () => {
+    logger.info('SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+      logger.info('HTTP server closed');
+      process.exit(0);
+    });
+  });
 };
+
+main().catch((error) => {
+  console.error('Failed to start backend', error);
+  process.exit(1);
+});
