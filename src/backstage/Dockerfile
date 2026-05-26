@@ -14,5 +14,6 @@ EXPOSE 7007 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
 
-# Start Backstage
-CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+# Use the official image's entry point - it handles config loading properly
+# The image expects NODE_OPTIONS or config files in /app root
+ENV NODE_ENV=production
