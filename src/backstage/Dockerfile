@@ -1,77 +1,18 @@
-# Stage 1 - Create yarn install skeleton layer
-FROM node:22-alpine AS packages
+# Use official Backstage image from GitHub Container Registry
+FROM ghcr.io/backstage/backstage:latest
 
 WORKDIR /app
-COPY backstage.json package.json yarn.lock ./
-COPY .yarnrc.yml ./
-COPY .yarn ./.yarn/
-COPY packages packages
 
-# Find all package.json files in packages
-RUN find packages \! -name "package.json" -mindepth 2 -maxdepth 2 -exec rm -rf {} \+
+# Copy configuration files
+COPY --chown=node:node app-config.yaml ./
+COPY --chown=node:node app-config.production.yaml ./
 
+# Expose ports (7007 for backend, 3000 for frontend)
+EXPOSE 7007 3000
 
-# Stage 2 - Install dependencies and build packages
-FROM node:22-alpine AS build
-
-# Set Python interpreter for node-gyp to use
-ENV PYTHON=/usr/bin/python3
-
-# Install build dependencies
-RUN apk add --no-cache python3 g++ make
-
-USER node
-WORKDIR /app
-
-COPY --from=packages --chown=node:node /app .
-RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
-    yarn install --immutable
-
-COPY --chown=node:node . .
-
-RUN yarn build:backend
-
-RUN mkdir packages/backend/dist/skeleton packages/backend/dist/bundle \
-    && tar czf packages/backend/dist/skeleton.tar.gz -C packages/backend/dist skeleton \
-    && tar czf packages/backend/dist/bundle.tar.gz -C packages/backend/dist bundle
-
-
-# Stage 3 - Build the actual backend image and install production dependencies
-FROM node:22-alpine
-
-# Set Python interpreter for node-gyp to use
-ENV PYTHON=/usr/bin/python3
-
-# Install runtime dependencies
-RUN apk add --no-cache python3 g++ make
-
-USER node
-WORKDIR /app
-
-# Copy all necessary files from build stage
-COPY --from=build --chown=node:node /app/.yarn ./.yarn
-COPY --from=build --chown=node:node /app/.yarnrc.yml ./
-COPY --from=build --chown=node:node /app/backstage.json ./
-COPY --from=build --chown=node:node /app/yarn.lock ./
-COPY --from=build --chown=node:node /app/package.json ./
-COPY --from=build --chown=node:node /app/packages ./packages
-COPY --chown=node:node app-config*.yaml ./
-COPY --chown=node:node entrypoint.sh /app/entrypoint.sh
-
-# Make entrypoint executable
-RUN chmod +x /app/entrypoint.sh
-
-# Install production dependencies
-RUN --mount=type=cache,target=/home/node/.cache/yarn,sharing=locked,uid=1000,gid=1000 \
-    yarn install --production && rm -rf "$(yarn cache clean)"
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV NODE_OPTIONS="--no-node-snapshot"
-
-EXPOSE 7007
-
+# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD node -e "require('http').get('http://localhost:7007/healthcheck', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Start Backstage
+CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]

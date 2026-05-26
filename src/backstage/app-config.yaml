@@ -32,10 +32,19 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integrate
   rules:
-    - allow: [Component, System, Group, User, Resource, Location]
+    - allow: [Component, System, Group, User, Resource, Location, Template]
   locations:
+    # All entities catalog
     - type: url
-      target: https://github.com/${GITHUB_ORG}/tfm-platform/blob/main/catalog-entities/all-entities.yaml
+      target: https://github.com/${GITHUB_ORG}/tfm-gitops/blob/main/catalog-entities/all-entities.yaml
+      rules:
+        - allow: [Component, System, Group, User, Resource, Location]
+    
+    # API service template
+    - type: url
+      target: https://github.com/${GITHUB_ORG}/tfm-gitops/blob/main/catalog-entities/templates/api-service-template.yaml
+      rules:
+        - allow: [Template]
 
 auth:
   providers:
