@@ -1,6 +1,6 @@
 app:
   title: TFM Backstage
-  baseUrl: http://localhost:3000
+  baseUrl: http://localhost:7007
 
 backend:
   baseUrl: http://localhost:7007
@@ -10,7 +10,7 @@ backend:
   csp:
     connect-src: ["'self'", 'http:', 'https:']
   cors:
-    origin: http://localhost:3000
+    origin: http://localhost:7007
     methods: [GET, HEAD, PUT, PATCH, POST, DELETE]
     credentials: true
   auth:
