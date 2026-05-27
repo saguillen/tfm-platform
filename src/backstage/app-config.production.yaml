@@ -5,6 +5,9 @@ backend:
   baseUrl: https://${BACKSTAGE_URL}
   cors:
     origin: https://${BACKSTAGE_URL}
+  auth:
+    keys:
+      - secret: ${BACKEND_AUTH_SECRET}
   database:
     client: pg
     connection:

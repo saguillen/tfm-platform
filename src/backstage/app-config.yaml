@@ -13,6 +13,9 @@ backend:
     origin: http://localhost:3000
     methods: [GET, HEAD, PUT, PATCH, POST, DELETE]
     credentials: true
+  auth:
+    keys:
+      - secret: ${BACKEND_AUTH_SECRET}
   database:
     client: pg
     connection:
