@@ -1,15 +1,11 @@
 import {
   createApiFactory,
   discoveryApiRef,
-  identityApiRef,
   scmIntegrationsApiRef,
 } from '@backstage/core-plugin-api';
 import { ScmIntegrations } from '@backstage/integration';
 import { UrlPatternDiscovery } from '@backstage/core-app-api';
-import {
-  notificationsApiRef,
-  NotificationsClient,
-} from '@backstage/plugin-notifications';
+import { notificationsApiRef } from '@backstage/plugin-notifications';
 
 export const apis = [
   createApiFactory({
@@ -24,8 +20,16 @@ export const apis = [
   }),
   createApiFactory({
     api: notificationsApiRef,
-    deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
-    factory: ({ discoveryApi, identityApi }) =>
-      new NotificationsClient({ discoveryApi, identityApi }),
+    deps: {},
+    factory: () =>
+      ({
+        getNotifications: async () => ({ items: [], totalCount: 0 }),
+        getNotification: async () => undefined,
+        markAsRead: async () => undefined,
+        markAsUnread: async () => undefined,
+        markAllAsRead: async () => undefined,
+        markAllAsUnread: async () => undefined,
+        deleteNotification: async () => undefined,
+      } as any),
   }),
 ];
