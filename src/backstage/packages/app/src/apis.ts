@@ -3,12 +3,13 @@ import {
   discoveryApiRef,
   identityApiRef,
   scmIntegrationsApiRef,
-  errorApiRef,
-  unknownErrorHandler,
 } from '@backstage/core-plugin-api';
 import { ScmIntegrations } from '@backstage/integration';
 import { UrlPatternDiscovery } from '@backstage/core-app-api';
-import { IdentityApi } from '@backstage/core-plugin-api';
+import {
+  notificationsApiRef,
+  NotificationsClient,
+} from '@backstage/plugin-notifications';
 
 export const apis = [
   createApiFactory({
@@ -20,5 +21,11 @@ export const apis = [
     api: scmIntegrationsApiRef,
     deps: {},
     factory: () => ScmIntegrations.fromConfig({}),
+  }),
+  createApiFactory({
+    api: notificationsApiRef,
+    deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
+    factory: ({ discoveryApi, identityApi }) =>
+      new NotificationsClient({ discoveryApi, identityApi }),
   }),
 ];

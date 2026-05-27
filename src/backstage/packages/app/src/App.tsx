@@ -1,15 +1,19 @@
 import React from 'react';
+import { Route } from 'react-router-dom';
 import { createApp } from '@backstage/app-defaults';
 import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
-import { CatalogPage } from '@backstage/plugin-catalog';
-import { CatalogIndexPage } from '@backstage/plugin-catalog';
+import {
+  CatalogIndexPage,
+  CatalogPage,
+  catalogPlugin,
+} from '@backstage/plugin-catalog';
 import { TechDocsIndexPage } from '@backstage/plugin-techdocs';
 import { HomePage } from '@backstage/plugin-home';
 import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
+import { apis } from './apis';
 
 const app = createApp({
-  apis: [],
-  plugins: [],
+  apis,
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,
@@ -17,7 +21,7 @@ const app = createApp({
   },
 });
 
-const AppBase = app.createRoot(
+const App = app.createRoot(
   <AppRouter>
     <FlatRoutes>
       <Route path="/" element={<HomePage />} />
@@ -29,4 +33,4 @@ const AppBase = app.createRoot(
   </AppRouter>,
 );
 
-export default AppBase;
+export default App;
