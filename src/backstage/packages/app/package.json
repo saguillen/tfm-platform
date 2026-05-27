@@ -9,7 +9,7 @@
     "role": "frontend"
   },
   "scripts": {
-    "build": "backstage-cli app:build",
+    "build": "backstage-cli package build",
     "start": "backstage-cli app:serve",
     "lint": "backstage-cli repo lint --since origin/main",
     "test": "backstage-cli repo test --passWithNoTests"
