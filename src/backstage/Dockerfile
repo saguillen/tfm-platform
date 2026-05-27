@@ -6,6 +6,7 @@ COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn/ .yarn/
 COPY packages/ packages/
 COPY tsconfig.json backstage.json ./
+COPY app-config.yaml app-config.production.yaml ./
 
 RUN corepack enable
 RUN yarn install
