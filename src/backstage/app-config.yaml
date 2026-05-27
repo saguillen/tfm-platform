@@ -78,6 +78,10 @@ scaffolder:
     email: backstage@example.com
   defaultCommitAction: commit
 
+plugins:
+  notifications:
+    disabled: true
+
 kubernetes:
   clusterLocations:
     - type: 'config'
