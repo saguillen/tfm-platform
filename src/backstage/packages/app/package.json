@@ -27,7 +27,6 @@
     "@backstage/plugin-home": "^0.7.0",
     "@backstage/plugin-org": "^0.6.15",
     "@backstage/plugin-permission-react": "^0.4.20",
-    "@backstage/plugin-notifications": "^0.2.4",
     "@backstage/plugin-scaffolder": "^1.18.0",
     "@backstage/plugin-search": "^1.4.0",
     "@backstage/plugin-techdocs": "^1.9.0",

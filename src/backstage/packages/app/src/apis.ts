@@ -1,11 +1,24 @@
 import {
   createApiFactory,
+  createApiRef,
   discoveryApiRef,
   scmIntegrationsApiRef,
 } from '@backstage/core-plugin-api';
 import { ScmIntegrations } from '@backstage/integration';
 import { UrlPatternDiscovery } from '@backstage/core-app-api';
-import { notificationsApiRef } from '@backstage/plugin-notifications';
+type NotificationsApi = {
+  getNotifications: () => Promise<{ items: unknown[]; totalCount: number }>;
+  getNotification: (id: string) => Promise<unknown | undefined>;
+  markAsRead: (id: string) => Promise<void>;
+  markAsUnread: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
+  markAllAsUnread: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
+};
+
+const notificationsApiRef = createApiRef<NotificationsApi>({
+  id: 'plugin.notifications.service',
+});
 
 export const apis = [
   createApiFactory({
