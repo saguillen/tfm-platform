@@ -8,7 +8,7 @@ COPY packages/ packages/
 COPY tsconfig.json backstage.json ./
 
 RUN corepack enable
-RUN yarn install --immutable
+RUN yarn install
 RUN yarn workspace @tfm/app build
 
 # Use official Backstage image from GitHub Container Registry
