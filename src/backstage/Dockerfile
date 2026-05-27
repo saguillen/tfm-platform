@@ -1,5 +1,5 @@
 # Build the frontend app
-FROM node:20-bullseye AS app-builder
+FROM node:22-bullseye AS app-builder
 WORKDIR /app
 
 COPY package.json yarn.lock .yarnrc.yml ./
