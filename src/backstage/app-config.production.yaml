@@ -17,3 +17,7 @@ backend:
       password: ${POSTGRES_PASSWORD}
       database: ${POSTGRES_DB}
       ssl: true
+  reading:
+    allow:
+      - host: github.com
+      - host: raw.githubusercontent.com

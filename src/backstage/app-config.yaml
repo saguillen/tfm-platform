@@ -26,6 +26,10 @@ backend:
       database: ${POSTGRES_DB}
   cache:
     store: memory
+  reading:
+    allow:
+      - host: github.com
+      - host: raw.githubusercontent.com
 
 organization:
   name: TFM Platform
