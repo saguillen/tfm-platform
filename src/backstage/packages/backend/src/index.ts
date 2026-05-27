@@ -12,6 +12,11 @@ const main = async () => {
     res.json({ status: 'ok' });
   });
 
+  // Notifications plugin endpoint
+  app.use('/api/notifications', (req, res) => {
+    res.json({ messages: [] });
+  });
+
   const port = process.env.PORT || 7007;
   const host = '0.0.0.0';
 
