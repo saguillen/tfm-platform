@@ -16,4 +16,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 
 # Use the official image's entry point - it handles config loading properly
 # The image expects NODE_OPTIONS or config files in /app root
-ENV NODE_ENV=production
+ENV NODE_ENV=development
