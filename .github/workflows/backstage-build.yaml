@@ -22,7 +22,7 @@ permissions:
 env:
   REGISTRY: tfmplatformacr.azurecr.io
   IMAGE_NAME: backstage
-  DOCKERFILE_PATH: src/backstage/Dockerfile
+  DOCKERFILE_PATH: src/backstage/packages/backend/Dockerfile
 
 jobs:
   build:
