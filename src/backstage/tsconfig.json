@@ -1,19 +1,17 @@
 {
+  "extends": "@backstage/cli/config/tsconfig.json",
+  "include": [
+    "packages/*/src",
+    "packages/*/config.d.ts",
+    "plugins/*/src",
+    "plugins/*/config.d.ts",
+    "plugins/*/dev",
+    "plugins/*/migrations"
+  ],
+  "exclude": ["node_modules"],
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "lib": ["es2020"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+    "outDir": "dist-types",
+    "rootDir": ".",
+    "jsx": "react-jsx"
+  }
 }

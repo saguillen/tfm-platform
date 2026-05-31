@@ -1,36 +1,7 @@
-import React from 'react';
-import { Route } from 'react-router-dom';
-import { createApp } from '@backstage/app-defaults';
-import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
-import {
-  CatalogIndexPage,
-  CatalogPage,
-  catalogPlugin,
-} from '@backstage/plugin-catalog';
-import { TechDocsIndexPage } from '@backstage/plugin-techdocs';
-import { HomePage } from '@backstage/plugin-home';
-import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
-import { apis } from './apis';
+import { createApp } from '@backstage/frontend-defaults';
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import { navModule } from './modules/nav';
 
-const app = createApp({
-  apis,
-  bindRoutes({ bind }) {
-    bind(catalogPlugin.externalRoutes, {
-      createComponent: scaffolderPlugin.routes.root,
-    });
-  },
+export default createApp({
+  features: [catalogPlugin, navModule],
 });
-
-const App = app.createRoot(
-  <AppRouter>
-    <FlatRoutes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/catalog" element={<CatalogIndexPage />} />
-      <Route path="/catalog/:namespace/:kind/:name" element={<CatalogPage />} />
-      <Route path="/docs" element={<TechDocsIndexPage />} />
-      <Route path="/create" element={<ScaffolderPage />} />
-    </FlatRoutes>
-  </AppRouter>,
-);
-
-export default App;

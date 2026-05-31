@@ -1,6 +1,0 @@
-{
-  "extends": "@backstage/cli/types/config.app.json",
-  "include": [
-    "src"
-  ]
-}

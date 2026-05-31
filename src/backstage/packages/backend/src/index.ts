@@ -1,51 +1,69 @@
-import express from 'express';
-import path from 'path';
+/*
+ * Hi!
+ *
+ * Note that this is an EXAMPLE Backstage backend. Please check the README.
+ *
+ * Happy hacking!
+ */
 
-const main = async () => {
-  const app = express();
+import { createBackend } from '@backstage/backend-defaults';
 
-  const appDistPath = path.resolve(__dirname, '../../app/dist');
-  app.use(express.static(appDistPath));
-  
-  // Health check endpoints
-  app.get('/healthcheck', (req, res) => {
-    res.json({ status: 'ok' });
-  });
-  
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
-  });
+const backend = createBackend();
 
-  // Notifications plugin endpoint
-  app.use('/api/notifications', (req, res) => {
-    res.json({ messages: [] });
-  });
+backend.add(import('@backstage/plugin-app-backend'));
+backend.add(import('@backstage/plugin-proxy-backend'));
 
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      return next();
-    }
+// scaffolder plugin
+backend.add(import('@backstage/plugin-scaffolder-backend'));
+backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
+backend.add(
+  import('@backstage/plugin-scaffolder-backend-module-notifications'),
+);
 
-    return res.sendFile(path.join(appDistPath, 'index.html'));
-  });
+// techdocs plugin
+backend.add(import('@backstage/plugin-techdocs-backend'));
 
-  const port = process.env.PORT || 7007;
-  const host = '0.0.0.0';
+// auth plugin
+backend.add(import('@backstage/plugin-auth-backend'));
+// See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
+backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+// See https://backstage.io/docs/auth/guest/provider
 
-  const server = app.listen(port, host, () => {
-    console.log(`Backstage backend listening on http://${host}:${port}`);
-  });
+// catalog plugin
+backend.add(import('@backstage/plugin-catalog-backend'));
+backend.add(
+  import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
+);
 
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM signal received: closing HTTP server');
-    server.close(() => {
-      console.log('HTTP server closed');
-      process.exit(0);
-    });
-  });
-};
+// See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
+backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
-main().catch((error) => {
-  console.error('Failed to start backend', error);
-  process.exit(1);
-});
+// permission plugin
+backend.add(import('@backstage/plugin-permission-backend'));
+// See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
+backend.add(
+  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+);
+
+// search plugin
+backend.add(import('@backstage/plugin-search-backend'));
+
+// search engine
+// See https://backstage.io/docs/features/search/search-engines
+backend.add(import('@backstage/plugin-search-backend-module-pg'));
+
+// search collators
+backend.add(import('@backstage/plugin-search-backend-module-catalog'));
+backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
+
+// kubernetes plugin
+backend.add(import('@backstage/plugin-kubernetes-backend'));
+
+// notifications and signals plugins
+backend.add(import('@backstage/plugin-notifications-backend'));
+backend.add(import('@backstage/plugin-signals-backend'));
+
+// mcp actions plugin
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+
+backend.start();

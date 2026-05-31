@@ -1,10 +1,6 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
+import '@backstage/cli/asset-types';
+import ReactDOM from 'react-dom/client';
 import App from './App';
+import '@backstage/ui/css/styles.css';
 
-const root = createRoot(document.getElementById('root')!);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
