@@ -1,9 +1,11 @@
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import notificationsPlugin from '@backstage/plugin-notifications/alpha'; 
+import notificationsPlugin from '@backstage/plugin-notifications/alpha';
+import searchPlugin from '@backstage/plugin-search/alpha'; 
 import { navModule } from './modules/nav';
 
 
+
 export default createApp({
-  features: [catalogPlugin, navModule, notificationsPlugin,],
+  features: [catalogPlugin, navModule, notificationsPlugin, searchPlugin,],
 });
