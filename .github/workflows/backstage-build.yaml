@@ -44,6 +44,7 @@ jobs:
         run: |
           yarn install
           yarn tsc
+          yarn build:app
           yarn build:backend
 
       - name: Set up Docker Buildx
