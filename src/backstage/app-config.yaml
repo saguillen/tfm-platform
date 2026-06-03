@@ -121,13 +121,6 @@ catalog:
       rules:
         - allow: [User, Group]
 
-<<<<<<< HEAD
-=======
-    - type: url
-      target: https://github.com/saguillen/tfm-gitops/blob/main/catalog-entities/all-entities.yaml
-    
-
->>>>>>> parent of 6225da1 (remove URL target for catalog entities in app configuration files)
     ## Uncomment these lines to add more example data
     # - type: url
     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
