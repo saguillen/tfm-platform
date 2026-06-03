@@ -42,7 +42,7 @@ jobs:
       - name: Build Backstage backend
         working-directory: ./src/backstage
         run: |
-          yarn install --immutable
+          yarn install
           yarn tsc
           yarn build:backend
 
