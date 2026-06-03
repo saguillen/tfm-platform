@@ -46,7 +46,6 @@ catalog:
     # Local example data, replace this with your production config, these are intended for demo use only.
     # File locations are relative to the backend process, typically in a deployed context, such as in a Docker container, this will be the root
     - type: url
-      target: https://github.com/saguillen/tfm-gitops/blob/main/catalog-entities/all-entities.yaml
       rules:
          - allow: [Component, System, API, Resource, Location, Template, User, Group]
     - type: file
