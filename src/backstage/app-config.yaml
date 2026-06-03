@@ -120,11 +120,9 @@ catalog:
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
-        
-    - type: file
-      target: ../../../../../tfm-gitops/catalog-entities/templates/azure-vm-template.yaml
-      rules:
-        - allow: [Template]
+
+    - type: url
+      target: https://github.com/saguillen/tfm-gitops/blob/main/catalog-entities/all-entities.yaml
     
 
     ## Uncomment these lines to add more example data
