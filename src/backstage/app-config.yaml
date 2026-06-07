@@ -10,6 +10,7 @@ app:
     - page:catalog:
         config:
           path: /
+    
 
 organization:
   name: My Company
