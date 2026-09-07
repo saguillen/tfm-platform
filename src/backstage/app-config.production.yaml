@@ -49,8 +49,8 @@ catalog:
       target: ./examples/entities.yaml
 
     # Local example template
-    - type: file
-      target: ./examples/template/template.yaml
+    - type: url
+      target: https://github.com/saguillen/tfm-backstage-templates/blob/main/python-app/template.yaml
       rules:
         - allow: [Template]
 
