@@ -126,7 +126,6 @@ catalog:
       target: https://github.com/saguillen/tfm-backstage-templates/blob/main/python-app/template.yaml
       rules:
         - allow: [Template]
-
         
     ## Uncomment these lines to add more example data
     # - type: url
